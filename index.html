@@ -2,40 +2,62 @@
 <html lang='ja'>
   <head>
     <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <base target="_top">
     <!--<link rel="stylesheet" href="https://code.jquery.com/ui/1.11.4/themes/black-tie/jquery-ui.css">-->
   </head>
+  <!-- BootstrapのCSS読み込み -->
+  <!--ver 3.2.0-->
+  <!--<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">-->
+  <!--ver 4.0.0-->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
+  <!-- jQuery読み込み -->
   <!--<script src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
   <script src="https://code.jquery.com/ui/1.11.4/jquery-ui.min.js"></script>-->
   <script src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
+
+  <!-- BootstrapのJS読み込み -->
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+
     <?!= getContent("datetimepicker_css.html")?>
     <?!= getContent("datetimepicker_javascript.html")?>
+
+    <?!= getContent("clock_css.html")?>
   <body>
 <p>gmail送信予約入力画面</p>
+<div class="cssClock">
+    <div class="cssClock__hourMark cssClock__hourMark--00">Ⅻ</div>
+    <div class="cssClock__hourMark cssClock__hourMark--15">Ⅲ</div>
+    <div class="cssClock__hourMark cssClock__hourMark--30">Ⅵ</div>
+    <div class="cssClock__hourMark cssClock__hourMark--45">Ⅸ</div>
+    <div class="cssClock__minuteHand"></div>
+    <div class="cssClock__center"></div>
+</div>
 <script>
   // 画面初期表示
   $(function() {
-    $('#btn_reserve').click(function(e) { 
+    $('#btn_reserve').click(function(e) {
      var mailNumber = document.getElementById("text_answer").value;
      var arrayDate = [];
      for(var i = 0; i < mailNumber; i++){
        //console.log(document.getElementById("new").children[i].children[1].value);
-       arrayDate.push(document.getElementById("new").children[i].children[1].value);
+       arrayDate.push(document.getElementById("new").children[i].children[1].children[0].children[0].children[1].value);
      }
      google.script.run.withSuccessHandler(onAddSuccess).Reserve(document.getElementById("url").value, arrayDate);
      //google.script.run.withSuccessHandler(onAddSuccess).test(this.parentNode, arrayDate);
-    }); 
+    });
     function onAddSuccess(res) {
       $('#btn_answer').text('予約完了');
     }
     $('#datetimepicker').datetimepicker();
   });
-  
+
   $(function() {
-    $('#mailLoadButton').click(function(e) { 
+    $('#mailLoadButton').click(function(e) {
       <?
       var draft = GmailApp.getDraftMessages();
-      
+
       if (draft.length > 0) {
         var rows = [];
         var count = 0;
@@ -43,7 +65,7 @@
           if (draft[i].getTo() !== "") {
             rows.push([draft[i].getId(), draft[i].getTo(), draft[i].getSubject()]);?>
              var div_element = document.createElement("div");
-             div_element.innerHTML = '<p>メールID：<?=draft[i].getId()?>, To：<?=draft[i].getTo()?>, Sub：<?=draft[i].getSubject()?></p>日付：<input type="text" name="date<?=String(count)?>" id="datetimepicker<?=String(count)?>">';
+             div_element.innerHTML = '<p>To：<?=draft[i].getTo()?> Sub：<?=draft[i].getSubject()?></p><div class="row"><div class="col-md-2"><div class="form-group"><label for="datetimepicker<?=String(count)?>">日付</label><input type="text" class="form-control" name="date<?=String(count)?>" id="datetimepicker<?=String(count)?>" placeholder="DateTime"></div></div></div>';
              var parent_object = document.getElementById("new");
              parent_object.appendChild(div_element);
              <?count++;?>
@@ -52,6 +74,11 @@
         }
       }
       ?>
+
+      /*for(var i = 0; i < document.getElementById("text_answer").value; i++){
+        console.log(document.getElementById("new").children[i].children[1].children[0].children[0].children[1]);
+      }*/
+
       for (var i=0; i < <?=count?>; i++){
       $('#datetimepicker'+String(i)).datetimepicker();
     }
@@ -61,10 +88,20 @@
 <div>
 </div>
 <form style="margin: 20px 20px;">
-  <p>スプレッドシートのURL：<input type="text" id="url" style="width:60%;"></p>
-  <input type="button" id="mailLoadButton" value="メール読み込み" onclick="disabled = true;">
+  <div class="row">
+    <div class="col-md-6">
+      <div class="form-group">
+          <label for="url">スプレッドシートのURL</label>
+          <input type="text" class="form-control" id="url">
+      </div>
+    </div>
+</div>
+
+  <!--<input type="button" id="mailLoadButton" value="メール読み込み" onclick="disabled = true;">-->
+  <button type="button" id="mailLoadButton" class="btn btn-primary" onclick="disabled = true;">メール読み込み</button>
   <div id="new"></div>
-  <input type="button" id="btn_reserve" value="送信予約">
+  <!--<input type="button" id="btn_reserve" value="送信予約">-->
+  <button type="button" id="btn_reserve" class="btn btn-success">送信予約</button>
   <div id="btn_answer"></div>
   <input hidden type="text" id="text_answer">
 </form>
